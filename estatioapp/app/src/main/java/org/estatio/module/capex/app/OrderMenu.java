@@ -1,5 +1,6 @@
 package org.estatio.module.capex.app;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -18,11 +19,17 @@ import org.apache.isis.applib.annotation.ParameterLayout;
 import org.apache.isis.applib.annotation.RestrictTo;
 import org.apache.isis.applib.annotation.SemanticsOf;
 import org.apache.isis.applib.services.clock.ClockService;
+import org.apache.isis.applib.services.user.UserService;
+
+import org.isisaddons.module.security.dom.tenancy.ApplicationTenancyRepository;
 
 import org.incode.module.base.dom.valuetypes.LocalDateInterval;
 
+import org.estatio.module.base.dom.EstatioRole;
 import org.estatio.module.capex.dom.order.Order;
 import org.estatio.module.capex.dom.order.OrderRepository;
+import org.estatio.module.numerator.dom.Numerator;
+import org.estatio.module.numerator.dom.NumeratorRepository;
 import org.estatio.module.party.dom.Organisation;
 import org.estatio.module.party.dom.PartyRepository;
 
@@ -226,6 +233,19 @@ public class OrderMenu {
         return orderRepository.matchByOrderNumber(orderNumber);
     }
 
+    @Action(semantics = SemanticsOf.NON_IDEMPOTENT, restrictTo = RestrictTo.PROTOTYPING)
+    public Numerator createOrderNumberNumerator(final String format, final String atPath) {
+        return numeratorRepository.findOrCreateNumerator(
+                "Order number",
+                null,
+                format,
+                BigInteger.ZERO,
+                applicationTenancyRepository.findByPath(atPath));
+    }
+
+    public String validateCreateOrderNumberNumerator(final String format, final String atPath){
+        return !EstatioRole.ADMINISTRATOR.isApplicableFor(userService.getUser()) ? "You need administrator rights to create an order numerator" : null;
+    }
 
     ///////////////////////////////////////////
 
@@ -237,5 +257,14 @@ public class OrderMenu {
 
     @Inject
     ClockService clockService;
+
+    @Inject
+    NumeratorRepository numeratorRepository;
+
+    @Inject
+    ApplicationTenancyRepository applicationTenancyRepository;
+
+    @Inject
+    UserService userService;
 
 }
