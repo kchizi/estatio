@@ -1,0 +1,98 @@
+package org.estatio.module.capex.imports;
+
+import javax.annotation.Nullable;
+
+import org.apache.isis.applib.fixturescripts.FixtureScript;
+
+import org.isisaddons.module.excel.dom.ExcelFixture2;
+import org.isisaddons.module.excel.dom.ExcelMetaDataEnabled;
+import org.isisaddons.module.excel.dom.FixtureAwareRowHandler;
+
+import lombok.Getter;
+import lombok.Setter;
+
+public class ProjectImportHandler implements FixtureAwareRowHandler<ProjectImportHandler>, ExcelMetaDataEnabled {
+
+    public static final String ITA_PROJECT_PREFIX = "ITPR";
+
+    @Getter @Setter @Nullable
+    private String excelSheetName;
+
+    @Getter @Setter @Nullable
+    private Integer excelRowNumber;
+
+    @Getter @Setter @Nullable
+    private Integer noCommessa;
+
+    @Getter @Setter @Nullable
+    private String centroDiCosto;
+
+    @Getter @Setter @Nullable
+    private String cc;
+
+    @Getter @Setter @Nullable
+    private String causale;
+
+    /**
+     * To allow for usage within fixture scripts also.
+     */
+    @Setter
+    private FixtureScript.ExecutionContext executionContext;
+
+    /**
+     * To allow for usage within fixture scripts also.
+     */
+    @Setter
+    private ExcelFixture2 excelFixture2;
+
+    public ProjectImport handle(final ProjectImportHandler previousRow){
+        if (getNoCommessa()!=null) {
+            ProjectImport line = new ProjectImport();
+            line.setReference(deriveProjectReference(getNoCommessa()));
+            line.setName(deriveProjectName(getCausale()));
+            line.setAtPath("/ITA");
+            return line;
+        }
+        else {
+            return null;
+        }
+    }
+
+    @Override
+    public void handleRow(final ProjectImportHandler previousRow) {
+
+            if(executionContext != null && excelFixture2 != null) {
+                executionContext.addResult(excelFixture2,this.handle(previousRow));
+            }
+
+    }
+
+    private String deriveProjectReference(final Integer input){
+        return ITA_PROJECT_PREFIX.concat(input.toString());
+    }
+
+    private String deriveProjectName(final String input){
+        StringBuilder builder = new StringBuilder();
+        builder
+                .append(ITA_PROJECT_PREFIX)
+                .append(getNoCommessa().toString())
+                .append(" ")
+                .append(getCentroDiCosto());
+        if (getCausale()!=null){
+            builder
+                    .append(" - ")
+                    .append(clean(getCausale()));
+        }
+        return builder.toString();
+    }
+
+    private String clean(final String input){
+        if (input==null){
+            return null;
+        }
+        String result = input.trim();
+        return result.trim();
+    }
+
+}
+
