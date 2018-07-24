@@ -22,7 +22,10 @@ language governing permissions and limitations under the License.
         <groupId>org.incode</groupId>
         <artifactId>incode-parent</artifactId>
         <!-- NB: also update incode-platform.version property below.  Also update estatio-ecp pom.xml similarly -->
+        <version>1.16.2.20180724-1305-a28c0749</version>
+<!--
         <version>1.16.1.20180630-1352</version>
+-->
         <relativePath/>
     </parent>
 
@@ -68,8 +71,9 @@ language governing permissions and limitations under the License.
     <properties>
         <revision>1.29.0-SNAPSHOT</revision>
 
-        <isis.version>1.16.1.20180316-1549</isis.version>
+        <isis.version>1.16.2.20180709-1350-5d9f4f7c</isis.version>
         <!--
+        <isis.version>1.16.1.20180316-1549</isis.version>
         <isis.version>1.16.1.20180228-1118</isis.version>
         <isis.version>1.16.2-SNAPSHOT</isis.version>
         <isis.version>1.16.0.20180130-1145</isis.version>
@@ -77,7 +81,10 @@ language governing permissions and limitations under the License.
         -->
 
         <!-- NB: also update the parent of this pom.  Also update estatio-ecp pom.xml similarly -->
+        <incode-platform.version>1.16.2.20180724-1305-a28c0749</incode-platform.version>
+<!--
         <incode-platform.version>1.16.1.20180630-1352</incode-platform.version>
+-->
 
         <wicketstuff.version>7.9.0</wicketstuff.version>
 
@@ -86,7 +93,7 @@ language governing permissions and limitations under the License.
         <maven-checkstyle-plugin.configLocation>${project.basedir}/codequality/checkstyle.xml</maven-checkstyle-plugin.configLocation>
         <maven-pmd-plugin.ruleset>${project.basedir}/codequality/pmd.xml</maven-pmd-plugin.ruleset>
 
-        <lombok.version>1.16.6</lombok.version>
+        <lombok.version>1.18.0</lombok.version>
         <rfc-2445.version>1.0-SNAPSHOT</rfc-2445.version>
         <joda-time.version>2.3</joda-time.version>
         <freemarker.version>2.3.25-incubating</freemarker.version>
@@ -387,6 +394,50 @@ language governing permissions and limitations under the License.
                 </repository>
             </repositories>
         </profile>
+
+        <!--
+        Bootstrap to download incode-parent
+        -->
+        <profile>
+            <id>incode-cloud-maven</id>
+            <activation>
+                <property>
+                    <name>!skip.incode-cloud-maven</name>
+                </property>
+            </activation>
+            <repositories>
+                <repository>
+                    <id>incode-cloud-maven</id>
+                    <url>https://repo.incode.cloud/repository/maven/</url>
+                    <name>Incode Cloud (maven)</name>
+                    <releases>
+                        <enabled>true</enabled>
+                        <updatePolicy>always</updatePolicy>
+                        <checksumPolicy>fail</checksumPolicy>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                        <updatePolicy>always</updatePolicy>
+                        <checksumPolicy>fail</checksumPolicy>
+                    </snapshots>
+                    <layout>default</layout>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>incode-cloud-maven</id>
+                    <name>Incode Cloud (maven)</name>
+                    <releases>
+                        <enabled>true</enabled>
+                        <updatePolicy>never</updatePolicy>
+                        <checksumPolicy>fail</checksumPolicy>
+                    </releases>
+                    <url>https://repo.incode.cloud/repository/maven/</url>
+                    <layout>default</layout>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+
     </profiles>
 </project>
 
