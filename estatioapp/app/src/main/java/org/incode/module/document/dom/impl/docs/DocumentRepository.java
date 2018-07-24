@@ -12,11 +12,8 @@ import org.apache.isis.applib.annotation.NatureOfService;
 import org.apache.isis.applib.annotation.Programmatic;
 import org.apache.isis.applib.query.QueryDefault;
 import org.apache.isis.applib.services.clock.ClockService;
-import org.apache.isis.applib.services.jdosupport.IsisJdoSupport;
-import org.apache.isis.applib.services.queryresultscache.QueryResultsCache;
 import org.apache.isis.applib.services.repository.RepositoryService;
 
-import org.incode.module.document.dom.impl.paperclips.PaperclipRepository;
 import org.incode.module.document.dom.impl.types.DocumentType;
 
 @DomainService(
@@ -42,12 +39,14 @@ public class DocumentRepository {
         return document;
     }
 
-    @Inject
-    PaperclipRepository paperclipRepository;
-
     @Programmatic
     public List<Document> findWithNoPaperclips() {
         return repositoryService.allMatches(new QueryDefault<>(Document.class, "findWithNoPaperclips"));
+    }
+
+    @Programmatic
+    public List<Document> findBySort(final DocumentSort sort) {
+        return repositoryService.allMatches(new QueryDefault<>(Document.class, "findBySort", "sort", sort));
     }
 
     @Programmatic
@@ -84,19 +83,10 @@ public class DocumentRepository {
     }
 
 
-    //region > injected services
-
-    @Inject
-    QueryResultsCache queryResultsCache;
-
-    @Inject
-    IsisJdoSupport isisJdoSupport;
     @Inject
     RepositoryService repositoryService;
     @Inject
     ClockService clockService;
 
-
-    //endregion
 
 }
