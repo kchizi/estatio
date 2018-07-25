@@ -21,9 +21,10 @@ language governing permissions and limitations under the License.
     <parent>
         <groupId>org.incode</groupId>
         <artifactId>incode-parent</artifactId>
-        <!-- NB: also update incode-platform.version property below.  Also update estatio-ecp pom.xml similarly -->
-        <version>1.16.2.20180724-1305-a28c0749</version>
+        <!-- NB: also update incode-platform.version property below.  Also update estatio-ecp & ecp-camel similarly -->
+        <version>1.16.2.20180725-1553-6ce1ebf9</version>
 <!--
+        <version>1.16.2.20180725-1256-8101b2d6</version>
         <version>1.16.1.20180630-1352</version>
 -->
         <relativePath/>
@@ -81,8 +82,9 @@ language governing permissions and limitations under the License.
         -->
 
         <!-- NB: also update the parent of this pom.  Also update estatio-ecp pom.xml similarly -->
-        <incode-platform.version>1.16.2.20180724-1305-a28c0749</incode-platform.version>
+        <incode-platform.version>1.16.2.20180725-1553-6ce1ebf9</incode-platform.version>
 <!--
+        <incode-platform.version>1.16.2.20180725-1256-8101b2d6</incode-platform.version>
         <incode-platform.version>1.16.1.20180630-1352</incode-platform.version>
 -->
 
