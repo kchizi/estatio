@@ -1,8 +1,10 @@
 package org.estatio.module.capex.imports;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 import org.apache.isis.applib.fixturescripts.FixtureScript;
+import org.apache.isis.applib.services.registry.ServiceRegistry2;
 
 import org.isisaddons.module.excel.dom.ExcelFixture2;
 import org.isisaddons.module.excel.dom.ExcelMetaDataEnabled;
@@ -48,9 +50,11 @@ public class ProjectImportHandler implements FixtureAwareRowHandler<ProjectImpor
     public ProjectImport handle(final ProjectImportHandler previousRow){
         if (getNoCommessa()!=null) {
             ProjectImport line = new ProjectImport();
+            serviceRegistry2.injectServicesInto(line);
             line.setReference(deriveProjectReference(getNoCommessa()));
             line.setName(deriveProjectName(getCausale()));
             line.setAtPath("/ITA");
+            line.importData(null);
             return line;
         }
         else {
@@ -83,7 +87,7 @@ public class ProjectImportHandler implements FixtureAwareRowHandler<ProjectImpor
                     .append(" - ")
                     .append(clean(getCausale()));
         }
-        return builder.toString();
+        return limitLength(builder.toString(), 50);
     }
 
     private String clean(final String input){
@@ -93,6 +97,16 @@ public class ProjectImportHandler implements FixtureAwareRowHandler<ProjectImpor
         String result = input.trim();
         return result.trim();
     }
+
+    String limitLength(final String input, final int length) {
+        if (input.length()<=length){
+            return input;
+        } else {
+            return input.substring(0, length);
+        }
+    }
+
+    @Inject ServiceRegistry2 serviceRegistry2;
 
 }
 
