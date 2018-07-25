@@ -3,6 +3,7 @@ package org.estatio.module.capex.imports;
 import java.math.BigDecimal;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 import javax.jdo.annotations.Column;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -23,16 +24,25 @@ import org.apache.isis.applib.annotation.MemberOrder;
 import org.apache.isis.applib.annotation.Mixin;
 import org.apache.isis.schema.utils.jaxbadapters.JodaLocalDateStringAdapter;
 
+import org.incode.module.country.dom.impl.CountryRepository;
+
+import org.estatio.module.capex.dom.invoice.IncomingInvoiceType;
+import org.estatio.module.capex.dom.order.OrderRepository;
+import org.estatio.module.capex.dom.order.approval.OrderApprovalState;
+import org.estatio.module.party.dom.Organisation;
+import org.estatio.module.party.dom.OrganisationRepository;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+// TODO: is there a reason to use XML VM?
 @XmlRootElement(name = "orderProjectLine")
 @XmlType(
         propOrder = {
                 "sheetName",
                 "rowNumber",
-                "numero",
+                "orderNumber",
                 "centro",
                 "progressivoCentro",
                 "commessa",
@@ -40,8 +50,8 @@ import lombok.Setter;
                 "integrazione",
                 "data",
                 "oggetto",
-                "fornitoreAppaltatore",
-                "codiceFornitore",
+                "sellerName",
+                "sellerReference",
                 "importoNettoIVA",
                 "cassaProfess",
                 "importoTotale",
@@ -77,7 +87,7 @@ public class OrderProjectLine {
     @XmlElement(required = false) @Nullable
     @Getter @Setter
     @MemberOrder(sequence = "3")
-    private Integer numero;
+    private String orderNumber;
 
     @XmlElement(required = false) @Nullable
     @Getter @Setter
@@ -118,12 +128,12 @@ public class OrderProjectLine {
     @XmlElement(required = false) @Nullable
     @Getter @Setter
     @MemberOrder(sequence = "11")
-    private String fornitoreAppaltatore;
+    private String sellerName;
 
     @XmlElement(required = false) @Nullable
     @Getter @Setter
     @MemberOrder(sequence = "12")
-    private String codiceFornitore;
+    private String sellerReference;
 
     @XmlElement(required = false) @Nullable
     @Getter @Setter
@@ -181,11 +191,22 @@ public class OrderProjectLine {
         @Action()
         @ActionLayout(contributed= Contributed.AS_ACTION)
         public OrderProjectLine act() {
-
+            Organisation seller = null;
+            if (line.getSellerReference()!=null) {
+                seller = organisationRepository.findOrCreateOrganisation(line.getSellerReference(), false, line.getSellerName(), countryRepository.findCountry("ITA"));
+            }
+            orderRepository.upsert(null, IncomingInvoiceType.CAPEX, line.getOrderNumber(), null, null, null, seller, null, "/ITA", OrderApprovalState.APPROVED);
             return line;
         }
 
+
+        @Inject OrderRepository orderRepository;
+
+        @Inject OrganisationRepository organisationRepository;
+
+        @Inject CountryRepository countryRepository;
     }
+
 
 }
 

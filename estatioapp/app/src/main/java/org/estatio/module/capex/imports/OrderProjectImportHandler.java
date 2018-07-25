@@ -4,10 +4,12 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 
 import javax.annotation.Nullable;
+import javax.inject.Inject;
 
 import org.joda.time.LocalDate;
 
 import org.apache.isis.applib.fixturescripts.FixtureScript;
+import org.apache.isis.applib.services.factory.FactoryService;
 
 import org.isisaddons.module.excel.dom.ExcelFixture2;
 import org.isisaddons.module.excel.dom.ExcelMetaDataEnabled;
@@ -89,8 +91,8 @@ public class OrderProjectImportHandler implements FixtureAwareRowHandler<OrderPr
     private ExcelFixture2 excelFixture2;
 
     public OrderProjectLine handle(final OrderProjectImportHandler previousRow){
-        return new OrderProjectLine(getExcelSheetName(), getExcelRowNumber(),
-                getNumero(), getCentro(), getProgressivoCentro(),
+        OrderProjectLine newLine =  new OrderProjectLine(getExcelSheetName(), getExcelRowNumber(),
+                getNumero().toString(), getCentro(), getProgressivoCentro(),
                 getCommessa(), getWorkType(), getIntegrazione(),
                 getData(), getOggetto(),
                 clean(getFornitore()),
@@ -102,6 +104,9 @@ public class OrderProjectImportHandler implements FixtureAwareRowHandler<OrderPr
                 getTotaleConIVA()!=null ? getTotaleConIVA().setScale(2, RoundingMode.HALF_UP) : null,
                 getAutorizzato(),
                 getNote());
+        OrderProjectLine._apply applyMixin = factoryService.mixin(OrderProjectLine._apply.class, newLine);
+        applyMixin.act();
+        return newLine;
     }
 
     @Override
@@ -120,6 +125,8 @@ public class OrderProjectImportHandler implements FixtureAwareRowHandler<OrderPr
         String result = input.trim();
         return result.trim();
     }
+
+    @Inject FactoryService factoryService;
 
 }
 
