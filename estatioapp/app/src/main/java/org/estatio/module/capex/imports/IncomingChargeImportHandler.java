@@ -34,6 +34,9 @@ public class IncomingChargeImportHandler implements FixtureAwareRowHandler<Incom
     @Getter @Setter @Nullable
     private String descriptionEng;
 
+    @Getter @Setter @Nullable
+    private String comment;
+
     /**
      * To allow for usage within fixture scripts also.
      */
@@ -100,7 +103,12 @@ public class IncomingChargeImportHandler implements FixtureAwareRowHandler<Incom
 
         }
         builder.append(clean(getDescriptionIta()));
-        return limitLength(builder.toString(), 50);
+        if (getComment()!=null){
+            builder.append(" (")
+                    .append(getComment())
+                    .append(")");
+        }
+        return limitLength(builder.toString(), 254);
     }
 
     private String clean(final String input){
