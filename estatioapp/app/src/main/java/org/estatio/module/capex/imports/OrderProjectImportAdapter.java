@@ -1,7 +1,6 @@
 package org.estatio.module.capex.imports;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -9,11 +8,13 @@ import javax.inject.Inject;
 import org.joda.time.LocalDate;
 
 import org.apache.isis.applib.fixturescripts.FixtureScript;
-import org.apache.isis.applib.services.factory.FactoryService;
+import org.apache.isis.applib.services.registry.ServiceRegistry2;
 
 import org.isisaddons.module.excel.dom.ExcelFixture2;
 import org.isisaddons.module.excel.dom.ExcelMetaDataEnabled;
 import org.isisaddons.module.excel.dom.FixtureAwareRowHandler;
+
+import org.estatio.module.party.imports.OrganisationImport;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -91,31 +92,37 @@ public class OrderProjectImportAdapter implements FixtureAwareRowHandler<OrderPr
     private ExcelFixture2 excelFixture2;
 
     public OrderProjectImportAdapter handle(final OrderProjectImportAdapter previousRow){
-        OrderProjectLine newLine =  new OrderProjectLine(getExcelSheetName(), getExcelRowNumber(),
-                getNumero().toString(), getCentro(), getProgressivoCentro(),
-                getCommessa(), getWorkType(), getIntegrazione(),
-                getData(), getOggetto(),
-                clean(getFornitore()),
-                getCodiceFornitore(),
-                getImportoNettoIVA()!=null ? getImportoNettoIVA().setScale(2,  RoundingMode.HALF_UP) : null,
-                getCassaProfess()!=null ? getCassaProfess().setScale(2, RoundingMode.HALF_UP) : null,
-                getImportoTotale()!=null ? getImportoTotale().setScale(2, RoundingMode.HALF_UP) : null,
-                getIva()!=null ? getIva().setScale(2, RoundingMode.HALF_UP) : null,
-                getTotaleConIVA()!=null ? getTotaleConIVA().setScale(2, RoundingMode.HALF_UP) : null,
-                getAutorizzato(),
-                getNote());
-        OrderProjectLine._apply applyMixin = factoryService.mixin(OrderProjectLine._apply.class, newLine);
-        applyMixin.act();
+        if (getCodiceFornitore()!=null) importSeller();
+        if (getNumero()!=null && getCentro()!=null) importOrder();
         return this;
     }
 
-    @Override
-    public void handleRow(final OrderProjectImportAdapter previousRow) {
+    private void importOrder() {
+        OrderImport newLine = new OrderImport(
+                getCentro(),
+                "CAPEX",
+                getNumero().toString(),
+                null,
+                getData(),
+                getData(),
+                getCodiceFornitore(),
+                null,
+                "/ITA",
+                "APPROVED",
+                getAutorizzato(),
+                getData()
+        );
+        serviceRegistry2.injectServicesInto(newLine);
+        newLine.importData(null);
+    }
 
-            if(executionContext != null && excelFixture2 != null) {
-                executionContext.addResult(excelFixture2,this.handle(previousRow));
-            }
-
+    private void importSeller() {
+        OrganisationImport organisationImport = new OrganisationImport();
+        serviceRegistry2.injectServicesInto(organisationImport);
+        organisationImport.setName(clean(getFornitore()));
+        organisationImport.setAtPath("/ITA");
+        organisationImport.setReference(getCodiceFornitore());
+        organisationImport.importData(null);
     }
 
     private String clean(final String input){
@@ -126,7 +133,15 @@ public class OrderProjectImportAdapter implements FixtureAwareRowHandler<OrderPr
         return result.trim();
     }
 
-    @Inject FactoryService factoryService;
+    @Override
+    public void handleRow(final OrderProjectImportAdapter previousRow) {
+            if(executionContext != null && excelFixture2 != null) {
+                executionContext.addResult(excelFixture2,this.handle(previousRow));
+            }
+
+    }
+
+    @Inject ServiceRegistry2 serviceRegistry2;
 
 }
 

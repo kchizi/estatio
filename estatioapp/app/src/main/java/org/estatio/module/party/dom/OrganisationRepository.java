@@ -44,17 +44,6 @@ public class OrganisationRepository extends UdoDomainRepositoryAndFactory<Organi
     // //////////////////////////////////////
 
     @Programmatic
-    public Organisation findOrCreateOrganisation(
-            final String reference,
-            final boolean useNumeratorForReference,
-            final String name,
-            final Country country) {
-        Organisation result = (Organisation) partyRepository.findPartyByReference(reference);
-        return result == null ?
-                newOrganisation(reference, useNumeratorForReference, name, country) : result;
-    }
-
-    @Programmatic
     public Organisation newOrganisation(
             final String reference,
             final boolean useNumeratorForReference,
