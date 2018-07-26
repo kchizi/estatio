@@ -160,10 +160,13 @@ public class OrderProjectImportAdapter implements FixtureAwareRowHandler<OrderPr
 
     @Override
     public void handleRow(final OrderProjectImportAdapter previousRow) {
-            if(executionContext != null && excelFixture2 != null) {
-                executionContext.addResult(excelFixture2,this.handle(previousRow));
+        if(executionContext != null && excelFixture2 != null) {
+            if (executionContext.getParameterAsBoolean("testMode")!=null && executionContext.getParameterAsBoolean("testMode")){
+                executionContext.addResult(excelFixture2, this.handle(previousRow));
+            } else {
+                this.handle(previousRow);
             }
-
+        }
     }
 
     @Inject ServiceRegistry2 serviceRegistry2;

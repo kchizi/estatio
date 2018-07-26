@@ -62,9 +62,13 @@ public class ProjectImportAdapter implements FixtureAwareRowHandler<ProjectImpor
     @Override
     public void handleRow(final ProjectImportAdapter previousRow) {
 
-            if(executionContext != null && excelFixture2 != null) {
-                executionContext.addResult(excelFixture2,this.handle(previousRow));
+        if(executionContext != null && excelFixture2 != null) {
+            if (executionContext.getParameterAsBoolean("testMode")!=null && executionContext.getParameterAsBoolean("testMode")){
+                executionContext.addResult(excelFixture2, this.handle(previousRow));
+            } else {
+                this.handle(previousRow);
             }
+        }
 
     }
 
