@@ -61,11 +61,13 @@ import lombok.Setter;
                         + "   && createdAt      <= :endDateTime "
                         + "ORDER BY createdAt DESC "),
         @Query(
-                name = "findBySort", language = "JDOQL",
+                name = "findOldestBySortAndCreatedAtBefore", language = "JDOQL",
                 value = "SELECT "
                         + "FROM org.incode.module.document.dom.impl.docs.Document "
-                        + "WHERE sort == :sort "
-                        + "ORDER BY createdAt ASC "),
+                        + "WHERE sort      == :sort "
+                        + "   && createdAt <= :before "
+                        + "ORDER BY createdAt ASC "
+                        + "RANGE 0,10"),
         @Query(
                 // uses NOT IN
                 name = "findWithNoPaperclips", language = "JDOQL",

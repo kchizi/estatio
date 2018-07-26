@@ -45,8 +45,13 @@ public class DocumentRepository {
     }
 
     @Programmatic
-    public List<Document> findBySort(final DocumentSort sort) {
-        return repositoryService.allMatches(new QueryDefault<>(Document.class, "findBySort", "sort", sort));
+    public List<Document> findOldestBySortAndCreatedAtBefore(final DocumentSort sort) {
+        final DateTime threeMonthsAgo = clockService.nowAsDateTime().minusMonths(3);
+        return repositoryService.allMatches(new QueryDefault<>(
+                Document.class,
+                "findOldestBySortAndCreatedAtBefore",
+                "sort", sort,
+                "before", threeMonthsAgo));
     }
 
     @Programmatic
