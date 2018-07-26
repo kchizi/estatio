@@ -10,6 +10,7 @@ import org.isisaddons.module.excel.dom.ExcelFixture2;
 import org.isisaddons.module.excel.dom.ExcelMetaDataEnabled;
 import org.isisaddons.module.excel.dom.FixtureAwareRowHandler;
 
+import org.estatio.module.charge.dom.ChargeRepository;
 import org.estatio.module.charge.imports.ChargeImport;
 
 import lombok.Getter;
@@ -125,6 +126,8 @@ public class IncomingChargeImportAdapter implements FixtureAwareRowHandler<Incom
     }
 
     @Inject ServiceRegistry2 serviceRegistry2;
+
+    @Inject ChargeRepository chargeRepository;
 
 }
 

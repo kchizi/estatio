@@ -110,7 +110,16 @@ public class OrderProjectImportAdapter implements FixtureAwareRowHandler<OrderPr
                 "/ITA",
                 "APPROVED",
                 getAutorizzato(),
-                getData()
+                getData(),
+                deriveChargeReference(),
+                clean(getOggetto()),
+                getImportoTotale(),
+                getIva(),
+                getTotaleConIVA(),
+                deriveStartDate(), // TODO: ask users concerning the period (how to derive the financial year)
+                deriveStartDate().plusYears(1).minusDays(1),
+                getCentro(),
+                deriveProjectReference()
         );
         serviceRegistry2.injectServicesInto(newLine);
         newLine.importData(null);
@@ -123,6 +132,22 @@ public class OrderProjectImportAdapter implements FixtureAwareRowHandler<OrderPr
         organisationImport.setAtPath("/ITA");
         organisationImport.setReference(getCodiceFornitore());
         organisationImport.importData(null);
+    }
+
+    private String deriveChargeReference(){
+        if (getWorkType()==null) return null;
+        return IncomingChargeImportAdapter.ITA_INCOMING_CHARGE_PREFIX + getWorkType().toString();
+    }
+
+    private String deriveProjectReference(){
+        if (getCommessa()==null) return null;
+        return ProjectImportAdapter.ITA_PROJECT_PREFIX + getCommessa().toString();
+    }
+
+    private LocalDate deriveStartDate(){
+        return getData().getMonthOfYear() < 7 ?
+                new LocalDate(getData().getYear()-1, 7, 1) :
+                new LocalDate(getData().getYear(), 7, 1);
     }
 
     private String clean(final String input){

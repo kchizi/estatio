@@ -1,5 +1,6 @@
 package org.estatio.module.capex.imports;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -23,8 +24,12 @@ import org.estatio.module.asset.dom.PropertyRepository;
 import org.estatio.module.base.dom.Importable;
 import org.estatio.module.capex.dom.invoice.IncomingInvoiceType;
 import org.estatio.module.capex.dom.order.Order;
+import org.estatio.module.capex.dom.order.OrderItem;
+import org.estatio.module.capex.dom.order.OrderItemRepository;
 import org.estatio.module.capex.dom.order.OrderRepository;
 import org.estatio.module.capex.dom.order.approval.OrderApprovalState;
+import org.estatio.module.capex.dom.project.ProjectRepository;
+import org.estatio.module.charge.dom.ChargeRepository;
 import org.estatio.module.party.dom.Organisation;
 import org.estatio.module.party.dom.PartyRepository;
 
@@ -45,7 +50,7 @@ public class OrderImport implements FixtureAwareRowHandler<OrderImport>, ExcelFi
     }
 
     public OrderImport(
-            final String propertyReference,
+            final String orderPropertyReference,
             final String orderType,
             final String orderNumber,
             final String sellerOrderReference,
@@ -56,10 +61,19 @@ public class OrderImport implements FixtureAwareRowHandler<OrderImport>, ExcelFi
             final String atPath,
             final String approvalStateIfAny,
             final String approvedBy,
-            final LocalDate approvedOn
+            final LocalDate approvedOn,
+            final String chargeReference,
+            final String description,
+            final BigDecimal netAmount,
+            final BigDecimal vatAmount,
+            final BigDecimal grossAmount,
+            final LocalDate startDate,
+            final LocalDate endDate,
+            final String itemPropertyReference,
+            final String projectReference
     ) {
         this();
-        this.propertyReference = propertyReference;
+        this.orderPropertyReference = orderPropertyReference;
         this.orderType = orderType;
         this.orderNumber = orderNumber;
         this.sellerOrderReference = sellerOrderReference;
@@ -71,11 +85,20 @@ public class OrderImport implements FixtureAwareRowHandler<OrderImport>, ExcelFi
         this.approvalStateIfAny = approvalStateIfAny;
         this.approvedBy = approvedBy;
         this.approvedOn = approvedOn;
+        this.chargeReference = chargeReference;
+        this.description = description;
+        this.netAmount = netAmount;
+        this.vatAmount = vatAmount;
+        this.grossAmount = grossAmount;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.itemPropertyReference = itemPropertyReference;
+        this.projectReference = projectReference;
     }
 
     // order
     @Getter @Setter
-    private String propertyReference;
+    private String orderPropertyReference;
     @Getter @Setter
     private String orderType;
     @Getter @Setter
@@ -98,6 +121,27 @@ public class OrderImport implements FixtureAwareRowHandler<OrderImport>, ExcelFi
     private String approvedBy;
     @Getter @Setter
     private LocalDate approvedOn;
+
+    // order item
+    @Getter @Setter
+    private String chargeReference;
+    @Getter @Setter
+    private String description;
+    @Getter @Setter
+    private BigDecimal netAmount;
+    @Getter @Setter
+    private BigDecimal vatAmount;
+    @Getter @Setter
+    private BigDecimal grossAmount;
+    @Getter @Setter
+    private LocalDate startDate;
+    @Getter @Setter
+    private LocalDate endDate;
+    @Getter @Setter
+    private String itemPropertyReference;
+    @Getter @Setter
+    private String projectReference;
+
 
     /**
      * To allow for usage within fixture scripts also.
@@ -126,15 +170,41 @@ public class OrderImport implements FixtureAwareRowHandler<OrderImport>, ExcelFi
     @Override
     @Programmatic
     public List<Object> importData(Object previousRow) {
-        Property property = propertyRepository.findPropertyByReference(getPropertyReference());
-        IncomingInvoiceType orderType = getOrderType()!=null ? IncomingInvoiceType.valueOf(getOrderType()) : null;
-        Organisation seller = (Organisation) partyRepository.findPartyByReference(getSellerReference());
-        Organisation buyer = (Organisation) partyRepository.findPartyByReference(getBuyerReference());
-        OrderApprovalState approvalState = getApprovalStateIfAny()!=null ? OrderApprovalState.valueOf(getApprovalStateIfAny()) : null;
-        Order order = orderRepository.upsert(property, orderType, getOrderNumber(), getSellerOrderReference(), getEntryDate(), getOrderDate(), seller, buyer, "/ITA", approvalState);
-        order.setApprovedBy(getApprovedBy());
-        order.setApprovedOn(getApprovedOn());
-        return Lists.newArrayList(order);
+        Order order = findOrcreateOrder();
+        OrderItem orderItem = findOrCreateOrderItem(order);
+        return Lists.newArrayList(orderItem);
+    }
+
+    private Order findOrcreateOrder() {
+        Order order = orderRepository.findByOrderNumber(getOrderNumber());
+        if (order==null) {
+            Property property = propertyRepository.findPropertyByReference(getOrderPropertyReference());
+            IncomingInvoiceType orderType = getOrderType() != null ? IncomingInvoiceType.valueOf(getOrderType()) : null;
+            Organisation seller = (Organisation) partyRepository.findPartyByReference(getSellerReference());
+            Organisation buyer = (Organisation) partyRepository.findPartyByReference(getBuyerReference());
+            OrderApprovalState approvalState = getApprovalStateIfAny() != null ? OrderApprovalState.valueOf(getApprovalStateIfAny()) : null;
+            order = orderRepository.upsert(property, orderType, getOrderNumber(), getSellerOrderReference(), getEntryDate(), getOrderDate(), seller, buyer, "/ITA", approvalState);
+            order.setApprovedBy(getApprovedBy());
+            order.setApprovedOn(getApprovedOn());
+        }
+        return order;
+    }
+
+    private OrderItem findOrCreateOrderItem(final Order order) {
+        return orderItemRepository.findOrCreate(
+                order,
+                chargeRepository.findByReference(getChargeReference()),
+                getDescription(),
+                getNetAmount(),
+                getVatAmount(),
+                getGrossAmount(),
+                null,
+                getStartDate(),
+                getEndDate(),
+                propertyRepository.findPropertyByReference(getItemPropertyReference()),
+                projectRepository.findByReference(getProjectReference()),
+                null
+        );
     }
 
     @Inject PartyRepository partyRepository;
@@ -142,5 +212,11 @@ public class OrderImport implements FixtureAwareRowHandler<OrderImport>, ExcelFi
     @Inject PropertyRepository propertyRepository;
 
     @Inject OrderRepository orderRepository;
+
+    @Inject ChargeRepository chargeRepository;
+
+    @Inject OrderItemRepository orderItemRepository;
+
+    @Inject ProjectRepository projectRepository;
 
 }
