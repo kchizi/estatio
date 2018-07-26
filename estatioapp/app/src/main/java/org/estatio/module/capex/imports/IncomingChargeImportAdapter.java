@@ -15,7 +15,7 @@ import org.estatio.module.charge.imports.ChargeImport;
 import lombok.Getter;
 import lombok.Setter;
 
-public class IncomingChargeImportHandler implements FixtureAwareRowHandler<IncomingChargeImportHandler>, ExcelMetaDataEnabled {
+public class IncomingChargeImportAdapter implements FixtureAwareRowHandler<IncomingChargeImportAdapter>, ExcelMetaDataEnabled {
 
     public static final String ITA_INCOMING_CHARGE_PREFIX = "I";
 
@@ -49,7 +49,7 @@ public class IncomingChargeImportHandler implements FixtureAwareRowHandler<Incom
     @Setter
     private ExcelFixture2 excelFixture2;
 
-    public ChargeImport handle(final IncomingChargeImportHandler previousRow){
+    public IncomingChargeImportAdapter handle(final IncomingChargeImportAdapter previousRow){
         if (getNo()!=null) {
             ChargeImport line = new ChargeImport();
             serviceRegistry2.injectServicesInto(line);
@@ -61,15 +61,12 @@ public class IncomingChargeImportHandler implements FixtureAwareRowHandler<Incom
             line.setChargeGroupReference("I");
             line.setChargeGroupName("Incoming");
             line.importData(null);
-            return line;
         }
-        else {
-            return null;
-        }
+        return this;
     }
 
     @Override
-    public void handleRow(final IncomingChargeImportHandler previousRow) {
+    public void handleRow(final IncomingChargeImportAdapter previousRow) {
 
             if(executionContext != null && excelFixture2 != null) {
                 executionContext.addResult(excelFixture2,this.handle(previousRow));

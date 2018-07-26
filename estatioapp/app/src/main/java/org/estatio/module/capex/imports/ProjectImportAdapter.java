@@ -13,7 +13,7 @@ import org.isisaddons.module.excel.dom.FixtureAwareRowHandler;
 import lombok.Getter;
 import lombok.Setter;
 
-public class ProjectImportHandler implements FixtureAwareRowHandler<ProjectImportHandler>, ExcelMetaDataEnabled {
+public class ProjectImportAdapter implements FixtureAwareRowHandler<ProjectImportAdapter>, ExcelMetaDataEnabled {
 
     public static final String ITA_PROJECT_PREFIX = "ITPR";
 
@@ -47,7 +47,7 @@ public class ProjectImportHandler implements FixtureAwareRowHandler<ProjectImpor
     @Setter
     private ExcelFixture2 excelFixture2;
 
-    public ProjectImport handle(final ProjectImportHandler previousRow){
+    public ProjectImportAdapter handle(final ProjectImportAdapter previousRow){
         if (getNoCommessa()!=null) {
             ProjectImport line = new ProjectImport();
             serviceRegistry2.injectServicesInto(line);
@@ -55,15 +55,12 @@ public class ProjectImportHandler implements FixtureAwareRowHandler<ProjectImpor
             line.setName(deriveProjectName(getCausale()));
             line.setAtPath("/ITA");
             line.importData(null);
-            return line;
         }
-        else {
-            return null;
-        }
+        return this;
     }
 
     @Override
-    public void handleRow(final ProjectImportHandler previousRow) {
+    public void handleRow(final ProjectImportAdapter previousRow) {
 
             if(executionContext != null && excelFixture2 != null) {
                 executionContext.addResult(excelFixture2,this.handle(previousRow));

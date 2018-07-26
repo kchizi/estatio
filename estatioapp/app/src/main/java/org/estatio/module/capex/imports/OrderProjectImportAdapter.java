@@ -18,7 +18,7 @@ import org.isisaddons.module.excel.dom.FixtureAwareRowHandler;
 import lombok.Getter;
 import lombok.Setter;
 
-public class OrderProjectImportHandler implements FixtureAwareRowHandler<OrderProjectImportHandler>, ExcelMetaDataEnabled {
+public class OrderProjectImportAdapter implements FixtureAwareRowHandler<OrderProjectImportAdapter>, ExcelMetaDataEnabled {
 
     @Getter @Setter @Nullable
     private String excelSheetName;
@@ -90,7 +90,7 @@ public class OrderProjectImportHandler implements FixtureAwareRowHandler<OrderPr
     @Setter
     private ExcelFixture2 excelFixture2;
 
-    public OrderProjectLine handle(final OrderProjectImportHandler previousRow){
+    public OrderProjectImportAdapter handle(final OrderProjectImportAdapter previousRow){
         OrderProjectLine newLine =  new OrderProjectLine(getExcelSheetName(), getExcelRowNumber(),
                 getNumero().toString(), getCentro(), getProgressivoCentro(),
                 getCommessa(), getWorkType(), getIntegrazione(),
@@ -106,11 +106,11 @@ public class OrderProjectImportHandler implements FixtureAwareRowHandler<OrderPr
                 getNote());
         OrderProjectLine._apply applyMixin = factoryService.mixin(OrderProjectLine._apply.class, newLine);
         applyMixin.act();
-        return newLine;
+        return this;
     }
 
     @Override
-    public void handleRow(final OrderProjectImportHandler previousRow) {
+    public void handleRow(final OrderProjectImportAdapter previousRow) {
 
             if(executionContext != null && excelFixture2 != null) {
                 executionContext.addResult(excelFixture2,this.handle(previousRow));

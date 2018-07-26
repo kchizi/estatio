@@ -3,13 +3,13 @@ package org.estatio.module.capex.imports;
 import org.assertj.core.api.Assertions;
 import org.junit.Test;
 
-public class ProjectImportHandler_Test {
+public class ProjectImportAdapter_Test {
 
     @Test
     public void limitLength_works() throws Exception {
 
         // given
-        ProjectImportHandler handler = new ProjectImportHandler();
+        ProjectImportAdapter handler = new ProjectImportAdapter();
         String str1 = "123";
         String str2 = "1234";
         String str3 = "12345";
