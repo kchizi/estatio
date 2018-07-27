@@ -21,6 +21,8 @@ import org.apache.isis.applib.annotation.SemanticsOf;
 import org.apache.isis.applib.services.clock.ClockService;
 import org.apache.isis.applib.services.user.UserService;
 
+import org.isisaddons.module.excel.dom.ExcelService;
+import org.isisaddons.module.excel.dom.util.Mode;
 import org.isisaddons.module.security.dom.tenancy.ApplicationTenancyRepository;
 
 import org.incode.module.base.dom.valuetypes.LocalDateInterval;
@@ -28,6 +30,7 @@ import org.incode.module.base.dom.valuetypes.LocalDateInterval;
 import org.estatio.module.base.dom.EstatioRole;
 import org.estatio.module.capex.dom.order.Order;
 import org.estatio.module.capex.dom.order.OrderRepository;
+import org.estatio.module.capex.imports.OrderProjectImportAdapter;
 import org.estatio.module.numerator.dom.Numerator;
 import org.estatio.module.numerator.dom.NumeratorRepository;
 import org.estatio.module.party.dom.Organisation;
@@ -249,6 +252,21 @@ public class OrderMenu {
 
     ///////////////////////////////////////////
 
+    @Action(semantics = SemanticsOf.NON_IDEMPOTENT)
+    public List<Order> importOrdersItaly(final org.apache.isis.applib.value.Blob orderSheet){
+        List<Order> result = new ArrayList<>();
+        for (OrderProjectImportAdapter adapter : excelService.fromExcel(orderSheet, OrderProjectImportAdapter.class, "ECP Juma", Mode.RELAXED)){
+            adapter.handle(null);
+            if (adapter.deriverOrderNumber()!=null) {
+                Order order = orderRepository.findByOrderNumber(adapter.deriverOrderNumber());
+                if (order!=null && !result.contains(order)){
+                    result.add(order);
+                }
+            }
+        }
+        return result;
+    }
+
     @Inject
     OrderRepository orderRepository;
 
@@ -266,5 +284,7 @@ public class OrderMenu {
 
     @Inject
     UserService userService;
+
+    @Inject ExcelService excelService;
 
 }

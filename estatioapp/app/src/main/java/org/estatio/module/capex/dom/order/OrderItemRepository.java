@@ -102,28 +102,6 @@ public class OrderItemRepository {
         return orderItem;
     }
 
-    @Programmatic
-    public OrderItem findOrCreate(
-            final Order order,
-            final Charge charge,
-            final String description,
-            final BigDecimal netAmount,
-            final BigDecimal vatAmount,
-            final BigDecimal grossAmount,
-            final Tax tax,
-            final LocalDate startDate,
-            final LocalDate endDate,
-            final Property property,
-            final Project project,
-            final BudgetItem budgetItem) {
-        OrderItem orderItem = findByOrderAndCharge(order, charge);
-        if (orderItem == null) {
-            orderItem = create(order, charge, description, netAmount, vatAmount, grossAmount, tax, startDate, endDate,
-                    property, project, budgetItem);
-        }
-        return orderItem;
-    }
-
     private void updateOrderItem(final OrderItem orderItem,
             final String description,
             final BigDecimal netAmount,

@@ -111,7 +111,7 @@ public class OrderProjectImportAdapter implements FixtureAwareRowHandler<OrderPr
         OrderImport newLine = new OrderImport(
                 getCentro(),
                 "CAPEX",
-                getNumero().toString(),
+                deriverOrderNumber(),
                 null,
                 getData(),
                 getData(),
@@ -133,6 +133,10 @@ public class OrderProjectImportAdapter implements FixtureAwareRowHandler<OrderPr
         );
         serviceRegistry2.injectServicesInto(newLine);
         newLine.importData(null);
+    }
+
+    public String deriverOrderNumber(){
+        return getNumero()!=null ? getNumero().toString() : null;
     }
 
     private void importSeller() {

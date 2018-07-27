@@ -170,28 +170,25 @@ public class OrderImport implements FixtureAwareRowHandler<OrderImport>, ExcelFi
     @Override
     @Programmatic
     public List<Object> importData(Object previousRow) {
-        Order order = findOrcreateOrder();
+        Order order = upsertOrder();
         OrderItem orderItem = findOrCreateOrderItem(order);
         return Lists.newArrayList(orderItem);
     }
 
-    private Order findOrcreateOrder() {
-        Order order = orderRepository.findByOrderNumber(getOrderNumber());
-        if (order==null) {
+    private Order upsertOrder() {
             Property property = propertyRepository.findPropertyByReference(getOrderPropertyReference());
             IncomingInvoiceType orderType = getOrderType() != null ? IncomingInvoiceType.valueOf(getOrderType()) : null;
             Organisation seller = (Organisation) partyRepository.findPartyByReference(getSellerReference());
             Organisation buyer = (Organisation) partyRepository.findPartyByReference(getBuyerReference());
             OrderApprovalState approvalState = getApprovalStateIfAny() != null ? OrderApprovalState.valueOf(getApprovalStateIfAny()) : null;
-            order = orderRepository.upsert(property, orderType, getOrderNumber(), getSellerOrderReference(), getEntryDate(), getOrderDate(), seller, buyer, "/ITA", approvalState);
+            Order order = orderRepository.upsert(property, orderType, getOrderNumber(), getSellerOrderReference(), getEntryDate(), getOrderDate(), seller, buyer, "/ITA", approvalState);
             order.setApprovedBy(getApprovedBy());
             order.setApprovedOn(getApprovedOn());
-        }
         return order;
     }
 
     private OrderItem findOrCreateOrderItem(final Order order) {
-        return orderItemRepository.findOrCreate(
+        return orderItemRepository.upsert(
                 order,
                 chargeRepository.findByReference(getChargeReference()),
                 getDescription(),
