@@ -6,6 +6,8 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 import org.joda.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.apache.isis.applib.fixturescripts.FixtureScript;
 import org.apache.isis.applib.services.registry.ServiceRegistry2;
@@ -14,12 +16,19 @@ import org.isisaddons.module.excel.dom.ExcelFixture2;
 import org.isisaddons.module.excel.dom.ExcelMetaDataEnabled;
 import org.isisaddons.module.excel.dom.FixtureAwareRowHandler;
 
+import org.estatio.module.capex.dom.project.Project;
+import org.estatio.module.capex.dom.project.ProjectItemRepository;
+import org.estatio.module.capex.dom.project.ProjectRepository;
+import org.estatio.module.charge.dom.Charge;
+import org.estatio.module.charge.dom.ChargeRepository;
 import org.estatio.module.party.imports.OrganisationImport;
 
 import lombok.Getter;
 import lombok.Setter;
 
 public class OrderProjectImportAdapter implements FixtureAwareRowHandler<OrderProjectImportAdapter>, ExcelMetaDataEnabled {
+
+    private static final Logger LOG = LoggerFactory.getLogger(OrderProjectImportAdapter.class);
 
     @Getter @Setter @Nullable
     private String excelSheetName;
@@ -94,6 +103,7 @@ public class OrderProjectImportAdapter implements FixtureAwareRowHandler<OrderPr
     public OrderProjectImportAdapter handle(final OrderProjectImportAdapter previousRow){
         if (getCodiceFornitore()!=null) importSeller();
         if (getNumero()!=null && getCentro()!=null) importOrder();
+        if (deriveProjectReference()!=null && deriveChargeReference()!=null) createProjectItemIfNotAlready();
         return this;
     }
 
@@ -134,6 +144,20 @@ public class OrderProjectImportAdapter implements FixtureAwareRowHandler<OrderPr
         organisationImport.importData(null);
     }
 
+    private void createProjectItemIfNotAlready(){
+        Project project = projectRepository.findByReference(deriveProjectReference());
+        if (project==null) {
+            LOG.error(String.format("Project not found for order number %s and project reference", getNumero().toString(), deriveProjectReference()));
+            return;
+        }
+        Charge charge = chargeRepository.findByReference(deriveChargeReference());
+        if (charge==null) {
+            LOG.error(String.format("Charge not found for order number %s and charge reference", getNumero().toString(), deriveChargeReference()));
+            return;
+        }
+        projectItemRepository.findOrCreate(project, charge, charge.getName(), null, null, null, null,null);
+    }
+
     private String deriveChargeReference(){
         if (getWorkType()==null) return null;
         return IncomingChargeImportAdapter.ITA_INCOMING_CHARGE_PREFIX + getWorkType().toString();
@@ -170,6 +194,12 @@ public class OrderProjectImportAdapter implements FixtureAwareRowHandler<OrderPr
     }
 
     @Inject ServiceRegistry2 serviceRegistry2;
+
+    @Inject ProjectRepository projectRepository;
+
+    @Inject ProjectItemRepository projectItemRepository;
+
+    @Inject ChargeRepository chargeRepository;
 
 }
 
