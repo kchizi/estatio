@@ -127,7 +127,7 @@ public class OrderProjectImportAdapter implements FixtureAwareRowHandler<OrderPr
                 getIva(),
                 getTotaleConIVA(),
                 deriveStartDate(), // TODO: ask users concerning the period (how to derive the financial year)
-                deriveStartDate().plusYears(1).minusDays(1),
+                deriveEndDate(),
                 getCentro(),
                 deriveProjectReference()
         );
@@ -173,9 +173,15 @@ public class OrderProjectImportAdapter implements FixtureAwareRowHandler<OrderPr
     }
 
     private LocalDate deriveStartDate(){
+        if (getData()==null) return null;
         return getData().getMonthOfYear() < 7 ?
                 new LocalDate(getData().getYear()-1, 7, 1) :
                 new LocalDate(getData().getYear(), 7, 1);
+    }
+
+    private LocalDate deriveEndDate(){
+        if (deriveStartDate()==null) return null;
+        return deriveStartDate().plusYears(1).minusDays(1);
     }
 
     private String clean(final String input){
