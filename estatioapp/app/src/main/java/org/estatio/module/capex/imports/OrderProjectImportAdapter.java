@@ -101,7 +101,7 @@ public class OrderProjectImportAdapter implements FixtureAwareRowHandler<OrderPr
     private ExcelFixture2 excelFixture2;
 
     public OrderProjectImportAdapter handle(final OrderProjectImportAdapter previousRow){
-        if (getCodiceFornitore()!=null) importSeller();
+        if (getCodiceFornitore()!=null && getFornitore()!=null) importSeller();
         if (getNumero()!=null && getCentro()!=null) importOrder();
         if (deriveProjectReference()!=null && deriveChargeReference()!=null) createProjectItemIfNotAlready();
         return this;
