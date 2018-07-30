@@ -122,7 +122,7 @@ public class OrderProjectImportAdapter implements FixtureAwareRowHandler<OrderPr
                 getAutorizzato(),
                 getData(),
                 deriveChargeReference(),
-                clean(getOggetto()),
+                limitLength(clean(getOggetto()), 254),
                 getImportoTotale(),
                 getIva(),
                 getTotaleConIVA(),
@@ -190,6 +190,14 @@ public class OrderProjectImportAdapter implements FixtureAwareRowHandler<OrderPr
         }
         String result = input.trim();
         return result.trim();
+    }
+
+    String limitLength(final String input, final int length) {
+        if (input.length()<=length){
+            return input;
+        } else {
+            return input.substring(0, length);
+        }
     }
 
     @Override
