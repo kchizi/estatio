@@ -100,6 +100,7 @@ public class ProjectImportAdapter implements FixtureAwareRowHandler<ProjectImpor
     }
 
     String limitLength(final String input, final int length) {
+        if (input==null) return input;
         if (input.length()<=length){
             return input;
         } else {
